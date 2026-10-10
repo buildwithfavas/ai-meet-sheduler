@@ -1,0 +1,26 @@
+[
+  {
+    "name": "Amal",
+    "email": "Uvamal11@gmail.com",
+    "role": "Product Manager",
+    "timezone": "Asia/Kolkata",
+    "workingHours": "09:30 - 18:30",
+    "preferences": "Prefers morning syncs between 10:00 and 12:30. Avoid scheduling after 17:30 IST."
+  },
+  {
+    "name": "Favas",
+    "email": "mohammedfavas888@gmail.com",
+    "role": "Tech Lead",
+    "timezone": "America/New_York",
+    "workingHours": "09:00 - 17:00",
+    "preferences": "No meetings before 10:00 AM EST (focus coding block). Prefers 30-minute meetings."
+  },
+  {
+    "name": "Bennet",
+    "email": "bennetsharwin76@gmail.com",
+    "role": "Senior Engineer",
+    "timezone": "Europe/London",
+    "workingHours": "09:00 - 17:30",
+    "preferences": "Available throughout the afternoon. Always ensure a 15-minute gap after other calls."
+  }
+]
