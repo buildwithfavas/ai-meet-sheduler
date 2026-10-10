@@ -1,68 +1,40 @@
 import React from "react";
 import { Bot, RefreshCw, BookOpen } from "lucide-react";
+import "./Header.css";
 
 export default function Header({ serverHealth, onOpenPolicies, onTestConnection, testingConnection }) {
+  const isOnline = serverHealth?.status === "online";
+
   return (
-    <header className="glass-panel" style={{ padding: "1.25rem 2rem", marginBottom: "2rem" }}>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "1rem" }}>
+    <header className="glass-panel header-container">
+      <div className="header-content">
         {/* Title and Branding */}
-        <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
-          <div style={{
-            background: "var(--accent-gradient)",
-            padding: "0.75rem",
-            borderRadius: "14px",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            boxShadow: "0 4px 15px rgba(79, 70, 229, 0.3)"
-          }}>
+        <div className="header-brand">
+          <div className="header-logo-badge">
             <Bot size={28} color="#ffffff" />
           </div>
           <div>
-            <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-              <h1 style={{ fontSize: "1.5rem", fontWeight: "700", color: "var(--text-main)" }}>
+            <div className="header-title-row">
+              <h1 className="header-title">
                 AI Meeting Scheduler
               </h1>
-              <span style={{
-                background: "rgba(99, 102, 241, 0.1)",
-                color: "var(--accent-primary)",
-                padding: "0.2rem 0.65rem",
-                borderRadius: "20px",
-                fontSize: "0.75rem",
-                fontWeight: "600",
-                border: "1px solid rgba(99, 102, 241, 0.25)"
-              }}>
+              <span className="header-badge">
                 LangGraph Multi-Agent
               </span>
             </div>
-            <p style={{ color: "var(--text-muted)", fontSize: "0.875rem" }}>
+            <p className="header-subtitle">
               Planner, Executor & Validator Agents with RAG Policies & Guardrails
             </p>
           </div>
         </div>
 
         {/* Status Indicators & Action Buttons */}
-        <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", flexWrap: "wrap" }}>
+        <div className="header-actions">
           {/* Active Model Indicator */}
-          <div style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "0.5rem",
-            background: "#f1f5f9",
-            padding: "0.45rem 0.9rem",
-            borderRadius: "10px",
-            border: "1px solid var(--border-color)",
-            fontSize: "0.85rem"
-          }}>
-            <div style={{
-              width: "8px",
-              height: "8px",
-              borderRadius: "50%",
-              backgroundColor: serverHealth?.status === "online" ? "#10b981" : "#ef4444",
-              boxShadow: serverHealth?.status === "online" ? "0 0 8px #10b981" : "none"
-            }} />
-            <span style={{ color: "var(--text-muted)" }}>Backend:</span>
-            <span style={{ color: "var(--text-main)", fontWeight: "600" }}>
+          <div className="header-status-indicator">
+            <div className={`status-dot ${isOnline ? "online" : ""}`} />
+            <span className="status-label">Backend:</span>
+            <span className="status-value">
               {serverHealth?.activeProvider === "ollama" ? "Ollama (Primary) + OpenRouter (Fallback)" : "OpenRouter"}
             </span>
           </div>
@@ -72,18 +44,7 @@ export default function Header({ serverHealth, onOpenPolicies, onTestConnection,
             id="test-connection-btn"
             onClick={onTestConnection}
             disabled={testingConnection}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "0.4rem",
-              background: "rgba(99, 102, 241, 0.08)",
-              color: "var(--accent-primary)",
-              padding: "0.5rem 0.9rem",
-              borderRadius: "10px",
-              border: "1px solid rgba(99, 102, 241, 0.25)",
-              fontSize: "0.85rem",
-              fontWeight: "600"
-            }}
+            className="header-btn header-btn-ping"
           >
             <RefreshCw size={14} className={testingConnection ? "spin" : ""} />
             {testingConnection ? "Pinging..." : "Test Ping"}
@@ -93,18 +54,7 @@ export default function Header({ serverHealth, onOpenPolicies, onTestConnection,
           <button
             id="view-knowledge-btn"
             onClick={onOpenPolicies}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "0.4rem",
-              background: "rgba(2, 132, 199, 0.08)",
-              color: "var(--cyan-accent)",
-              padding: "0.5rem 0.9rem",
-              borderRadius: "10px",
-              border: "1px solid rgba(2, 132, 199, 0.25)",
-              fontSize: "0.85rem",
-              fontWeight: "600"
-            }}
+            className="header-btn header-btn-knowledge"
           >
             <BookOpen size={14} />
             RAG Policies & Profiles

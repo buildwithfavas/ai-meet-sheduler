@@ -14,28 +14,12 @@ import {
   Video
 } from "lucide-react";
 import { formatDateToDMY } from "../utils/dateUtils";
+import "./AgentWorkflowVisualizer.css";
 
 function PulsingStatusBadge({ label, color = "var(--accent-primary)", bgColor = "rgba(99, 102, 241, 0.12)" }) {
   return (
-    <span style={{
-      display: "inline-flex",
-      alignItems: "center",
-      gap: "0.35rem",
-      fontSize: "0.75rem",
-      color,
-      marginLeft: "auto",
-      fontWeight: "700",
-      background: bgColor,
-      padding: "0.2rem 0.6rem",
-      borderRadius: "12px"
-    }}>
-      <span style={{
-        width: "7px",
-        height: "7px",
-        borderRadius: "50%",
-        background: color,
-        animation: "pulse-dot 1s infinite"
-      }} />
+    <span className="pulsing-badge" style={{ color, background: bgColor }}>
+      <span className="pulsing-dot" style={{ background: color }} />
       {label}
     </span>
   );
@@ -43,11 +27,11 @@ function PulsingStatusBadge({ label, color = "var(--accent-primary)", bgColor = 
 
 function WaitingCard({ icon: Icon, title, waitingFor }) {
   return (
-    <div className="glass-panel" style={{ padding: "1rem 1.25rem", opacity: 0.55, border: "1px dashed var(--border-color)" }}>
-      <div style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}>
+    <div className="glass-panel waiting-card">
+      <div className="waiting-card-content">
         <Icon size={18} color="#94a3b8" />
-        <h4 style={{ fontSize: "0.95rem", color: "var(--text-muted)", fontWeight: "600" }}>{title}</h4>
-        <span style={{ fontSize: "0.75rem", color: "#94a3b8", marginLeft: "auto", fontWeight: "500" }}>
+        <h4 className="waiting-card-title">{title}</h4>
+        <span className="waiting-card-sub">
           ⏳ {waitingFor}
         </span>
       </div>
@@ -60,12 +44,12 @@ export default function AgentWorkflowVisualizer({ result, isScheduling, activeAg
   // If not running and no result, show initial ready state
   if (!result && !isScheduling) {
     return (
-      <div className="glass-panel" style={{ padding: "3.5rem 2rem", textAlign: "center", color: "var(--text-muted)" }}>
-        <BrainCircuit size={48} color="#94a3b8" style={{ marginBottom: "1rem" }} />
-        <h3 style={{ color: "var(--text-main)", fontSize: "1.15rem", fontWeight: "700", marginBottom: "0.5rem" }}>
+      <div className="glass-panel visualizer-empty-card">
+        <BrainCircuit size={48} className="empty-card-icon" />
+        <h3 className="empty-card-title">
           Ready to Coordinate
         </h3>
-        <p style={{ fontSize: "0.9rem", maxWidth: "420px", margin: "0 auto" }}>
+        <p className="empty-card-description">
           Fill in the meeting requirements or choose a demo preset on the left to trigger the autonomous 3-agent LangGraph pipeline.
         </p>
       </div>
@@ -81,44 +65,23 @@ export default function AgentWorkflowVisualizer({ result, isScheduling, activeAg
   const isRevision = currentData.isRevision || iterationCount > 1;
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
+    <div className="workflow-container">
       {/* Live Dynamic Status Banner when actively scheduling */}
       {isScheduling && (
-        <div className="glass-panel" style={{
-          padding: "1.15rem 1.25rem",
-          background: isRevision ? "rgba(217, 119, 6, 0.06)" : "rgba(99, 102, 241, 0.05)",
-          borderLeft: `4px solid ${isRevision ? "var(--amber-accent)" : "var(--accent-primary)"}`,
-          display: "flex",
-          flexDirection: "column",
-          gap: "0.6rem",
-          animation: "fadeInCard 0.2s ease"
-        }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "0.5rem" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}>
-              <span style={{
-                width: "10px",
-                height: "10px",
-                borderRadius: "50%",
-                background: isRevision ? "var(--amber-accent)" : "var(--accent-primary)",
-                animation: "pulse-dot 1.2s infinite"
-              }} />
-              <span style={{ fontSize: "0.95rem", fontWeight: "700", color: "var(--text-main)" }}>
+        <div className={`glass-panel live-status-banner ${isRevision ? "is-revision" : ""}`}>
+          <div className="live-status-banner-header">
+            <div className="live-status-indicator">
+              <span className={`live-pulse-dot ${isRevision ? "revision" : "standard"}`} />
+              <span className="live-status-title">
                 {isRevision ? `🔁 LangGraph Cyclic Revision Loop (Attempt #${iterationCount})` : "Multi-Agent Orchestration in Progress"}
               </span>
             </div>
-            <span style={{
-              fontSize: "0.8rem",
-              color: isRevision ? "var(--amber-accent)" : "var(--accent-primary)",
-              background: isRevision ? "rgba(217, 119, 6, 0.12)" : "rgba(99, 102, 241, 0.12)",
-              padding: "0.25rem 0.65rem",
-              borderRadius: "12px",
-              fontWeight: "700"
-            }}>
+            <span className={`live-agent-badge ${isRevision ? "revision" : "standard"}`}>
               Active: {activeAgent === "planner" ? `Agent 1: Planner ${isRevision ? `(#${iterationCount})` : ""}` : activeAgent === "executor" ? `Agent 2: Executor ${isRevision ? `(#${iterationCount})` : ""}` : activeAgent === "validator" ? "Agent 3: Validator" : "Orchestrating..."}
             </span>
           </div>
 
-          <div style={{ fontSize: "0.85rem", color: "var(--text-main)", fontWeight: "500", background: "#ffffff", padding: "0.6rem 0.85rem", borderRadius: "8px", border: "1px solid var(--border-color)" }}>
+          <div className="live-status-message">
             {activeMessage || "Agents are collaborating in real-time to schedule your meeting..."}
           </div>
         </div>
@@ -126,26 +89,18 @@ export default function AgentWorkflowVisualizer({ result, isScheduling, activeAg
 
       {/* Status Banner (when finished) */}
       {!isScheduling && finalStatus && (
-        <div className="glass-panel" style={{
-          padding: "1.25rem 1.5rem",
-          borderLeft: `5px solid ${isSuccess ? "var(--emerald-accent)" : isBlocked ? "var(--rose-accent)" : "var(--amber-accent)"}`,
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          flexWrap: "wrap",
-          gap: "1rem"
-        }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+        <div className={`glass-panel result-status-banner ${isSuccess ? "border-success" : isBlocked ? "border-blocked" : "border-escalated"}`}>
+          <div className="result-status-main">
             {isSuccess && <CheckCircle2 size={26} color="var(--emerald-accent)" />}
             {isBlocked && <AlertCircle size={26} color="var(--rose-accent)" />}
             {isEscalated && <RotateCcw size={26} color="var(--amber-accent)" />}
             <div>
-              <h3 style={{ fontSize: "1.1rem", fontWeight: "700", color: "var(--text-main)" }}>
+              <h3 className="result-status-title">
                 {isSuccess && "Meeting Successfully Scheduled!"}
                 {isBlocked && "Security Guardrail Intercepted Request"}
                 {isEscalated && "Loop Limit Exceeded — Escalated to Human"}
               </h3>
-              <p style={{ fontSize: "0.85rem", color: "var(--text-muted)" }}>
+              <p className="result-status-subtitle">
                 {isSuccess && (iterationCount > 1 
                   ? `Resolved calendar conflicts autonomously via LangGraph revision in ${iterationCount} cycles.`
                   : "Validated on first attempt with zero policy violations.")}
@@ -155,15 +110,7 @@ export default function AgentWorkflowVisualizer({ result, isScheduling, activeAg
             </div>
           </div>
 
-          <div style={{
-            padding: "0.3rem 0.8rem",
-            borderRadius: "20px",
-            fontSize: "0.8rem",
-            fontWeight: "700",
-            background: isSuccess ? "rgba(5, 150, 105, 0.1)" : isBlocked ? "rgba(225, 29, 72, 0.1)" : "rgba(217, 119, 6, 0.1)",
-            color: isSuccess ? "var(--emerald-accent)" : isBlocked ? "var(--rose-accent)" : "var(--amber-accent)",
-            border: `1px solid ${isSuccess ? "rgba(5, 150, 105, 0.3)" : isBlocked ? "rgba(225, 29, 72, 0.3)" : "rgba(217, 119, 6, 0.3)"}`
-          }}>
+          <div className={`result-status-pill ${isSuccess ? "pill-success" : isBlocked ? "pill-blocked" : "pill-escalated"}`}>
             Status: {finalStatus}
           </div>
         </div>
@@ -171,24 +118,18 @@ export default function AgentWorkflowVisualizer({ result, isScheduling, activeAg
 
       {/* Confirmed Invite Card (if SUCCESS) */}
       {isSuccess && confirmedInvite && (
-        <div className="glass-panel" style={{
-          padding: "1.75rem",
-          background: "linear-gradient(135deg, rgba(5, 150, 105, 0.05) 0%, #ffffff 100%)",
-          borderColor: "rgba(5, 150, 105, 0.35)",
-          boxShadow: "0 10px 25px -5px rgba(5, 150, 105, 0.1)",
-          animation: "fadeInCard 0.3s ease"
-        }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "1rem", flexWrap: "wrap", gap: "1rem" }}>
+        <div className="glass-panel confirmed-invite-card">
+          <div className="confirmed-invite-header">
             <div>
-              <span style={{ fontSize: "0.75rem", color: "var(--emerald-accent)", fontWeight: "700", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+              <span className="confirmed-invite-tag">
                 Confirmed Reservation
               </span>
-              <h2 style={{ fontSize: "1.3rem", fontWeight: "700", color: "var(--text-main)", marginTop: "0.2rem" }}>
+              <h2 className="confirmed-invite-title">
                 {confirmedInvite.title}
               </h2>
             </div>
             
-            <div style={{ display: "flex", gap: "0.6rem", flexWrap: "wrap" }}>
+            <div className="confirmed-invite-actions">
               {/* Google Calendar Direct Add Button */}
               {confirmedInvite.googleCalendarUrl && (
                 <a
@@ -196,19 +137,7 @@ export default function AgentWorkflowVisualizer({ result, isScheduling, activeAg
                   target="_blank"
                   rel="noreferrer"
                   id="add-to-gcal-btn"
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "0.4rem",
-                    padding: "0.45rem 0.9rem",
-                    background: "rgba(5, 150, 105, 0.1)",
-                    color: "var(--emerald-accent)",
-                    border: "1px solid rgba(5, 150, 105, 0.3)",
-                    borderRadius: "8px",
-                    fontSize: "0.85rem",
-                    textDecoration: "none",
-                    fontWeight: "600"
-                  }}
+                  className="btn-gcal"
                 >
                   <Calendar size={15} /> Add to Google Calendar
                 </a>
@@ -220,55 +149,43 @@ export default function AgentWorkflowVisualizer({ result, isScheduling, activeAg
                 target="_blank"
                 rel="noreferrer"
                 id="join-google-meet-btn"
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "0.45rem",
-                  padding: "0.45rem 1rem",
-                  background: "#1a73e8",
-                  color: "#ffffff",
-                  borderRadius: "8px",
-                  fontSize: "0.85rem",
-                  textDecoration: "none",
-                  fontWeight: "700",
-                  boxShadow: "0 2px 10px rgba(26, 115, 232, 0.35)"
-                }}
+                className="btn-gmeet"
               >
                 <Video size={16} /> Join Google Meet
               </a>
             </div>
           </div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "1rem", marginBottom: "1rem" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}>
+          <div className="confirmed-invite-meta-grid">
+            <div className="meta-grid-item">
               <Clock size={16} color="var(--accent-primary)" />
               <div>
-                <div style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>Date & Time</div>
-                <div style={{ fontSize: "0.9rem", color: "var(--text-main)", fontWeight: "600" }}>
+                <div className="meta-label">Date & Time</div>
+                <div className="meta-value">
                   {formatDateToDMY(confirmedInvite.date)} • {confirmedInvite.startTime} - {confirmedInvite.endTime}
                 </div>
               </div>
             </div>
 
-            <div style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}>
+            <div className="meta-grid-item">
               <UserCheck size={16} color="var(--accent-primary)" />
               <div>
-                <div style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>Duration</div>
-                <div style={{ fontSize: "0.9rem", color: "var(--text-main)", fontWeight: "600" }}>
+                <div className="meta-label">Duration</div>
+                <div className="meta-value">
                   {confirmedInvite.durationMinutes} Minutes
                 </div>
               </div>
             </div>
 
-            <div style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}>
+            <div className="meta-grid-item">
               <Video size={16} color="#1a73e8" />
               <div>
-                <div style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>Video Call</div>
+                <div className="meta-label">Video Call</div>
                 <a
                   href={confirmedInvite.meetingLink}
                   target="_blank"
                   rel="noreferrer"
-                  style={{ fontSize: "0.85rem", color: "#1a73e8", fontWeight: "700", textDecoration: "underline" }}
+                  className="gmeet-link"
                 >
                   Google Meet
                 </a>
@@ -278,26 +195,15 @@ export default function AgentWorkflowVisualizer({ result, isScheduling, activeAg
 
           {/* Email Notification Dispatch Status */}
           {confirmedInvite.emailDelivery && (
-            <div style={{
-              background: "#f8fafc",
-              border: "1px solid rgba(99, 102, 241, 0.25)",
-              borderRadius: "10px",
-              padding: "0.85rem 1rem",
-              marginBottom: "1rem",
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              flexWrap: "wrap",
-              gap: "0.75rem"
-            }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}>
+            <div className="email-status-card">
+              <div className="email-status-left">
                 <Mail size={18} color="var(--accent-primary)" />
                 <div>
-                  <div style={{ fontSize: "0.85rem", color: "var(--text-main)", fontWeight: "600", display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                  <div className="email-status-title">
                     {confirmedInvite.emailDelivery.isSimulated ? (
                       <>
                         <span>Email Invites Simulated (Dev Mode)</span>
-                        <span style={{ fontSize: "0.7rem", color: "var(--amber-accent)", background: "rgba(217, 119, 6, 0.1)", padding: "0.15rem 0.5rem", borderRadius: "10px", fontWeight: "700" }}>
+                        <span className="dev-mode-badge">
                           EMAIL_ENABLED=false
                         </span>
                       </>
@@ -305,7 +211,7 @@ export default function AgentWorkflowVisualizer({ result, isScheduling, activeAg
                       <span>Email Invites Dispatched via Gmail SMTP</span>
                     )}
                   </div>
-                  <div style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>
+                  <div className="email-status-recipients">
                     Recipients: {confirmedInvite.emailDelivery.recipients?.join(", ")}
                   </div>
                 </div>
@@ -317,19 +223,7 @@ export default function AgentWorkflowVisualizer({ result, isScheduling, activeAg
                   target="_blank"
                   rel="noreferrer"
                   id="view-email-preview-btn"
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "0.3rem",
-                    fontSize: "0.8rem",
-                    color: "var(--cyan-accent)",
-                    background: "rgba(2, 132, 199, 0.1)",
-                    padding: "0.35rem 0.75rem",
-                    borderRadius: "6px",
-                    textDecoration: "none",
-                    fontWeight: "600",
-                    border: "1px solid rgba(2, 132, 199, 0.25)"
-                  }}
+                  className="btn-email-preview"
                 >
                   <ExternalLink size={13} /> View Sent Email Preview
                 </a>
@@ -339,9 +233,9 @@ export default function AgentWorkflowVisualizer({ result, isScheduling, activeAg
 
           {/* Agenda */}
           {confirmedInvite.agenda && confirmedInvite.agenda.length > 0 && (
-            <div style={{ borderTop: "1px solid var(--border-color)", paddingTop: "0.75rem" }}>
-              <div style={{ fontSize: "0.75rem", color: "var(--text-muted)", marginBottom: "0.3rem", fontWeight: "600" }}>Confirmed Agenda:</div>
-              <ul style={{ paddingLeft: "1.2rem", fontSize: "0.85rem", color: "var(--text-main)" }}>
+            <div className="confirmed-agenda-box">
+              <div className="confirmed-agenda-label">Confirmed Agenda:</div>
+              <ul className="confirmed-agenda-list">
                 {confirmedInvite.agenda.map((item, i) => (
                   <li key={i}>{item}</li>
                 ))}
@@ -352,18 +246,18 @@ export default function AgentWorkflowVisualizer({ result, isScheduling, activeAg
       )}
 
       {/* Progressive Agent Pipeline Trace */}
-      <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-        <h4 style={{ fontSize: "0.9rem", color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: "700" }}>
+      <div className="trace-pipeline">
+        <h4 className="trace-title">
           Autonomous Execution Trace
         </h4>
 
         {/* 1. Agent 1: Planner */}
         {isScheduling && activeAgent === "planner" && iterationCount > 1 ? (
           // Active Revision Attempt on Planner
-          <div className="glass-panel" style={{ padding: "1.25rem", border: "1.5px solid var(--amber-accent)", background: "rgba(217, 119, 6, 0.04)", animation: "fadeInCard 0.2s ease" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "0.6rem", marginBottom: "0.5rem" }}>
+          <div className="glass-panel trace-card card-border-amber">
+            <div className="trace-card-header">
               <BrainCircuit size={18} color="var(--amber-accent)" />
-              <h4 style={{ fontSize: "0.95rem", color: "var(--text-main)", fontWeight: "700" }}>
+              <h4 className="trace-card-title">
                 Agent 1: Planner (Revision Attempt #{iterationCount})
               </h4>
               <PulsingStatusBadge
@@ -372,28 +266,28 @@ export default function AgentWorkflowVisualizer({ result, isScheduling, activeAg
                 bgColor="rgba(217, 119, 6, 0.12)"
               />
             </div>
-            <p style={{ fontSize: "0.85rem", color: "var(--text-muted)" }}>
+            <p className="trace-card-desc">
               Validator flagged a conflict in the previous attempt. Agent 1 is re-evaluating schedule options to find a conflict-free window.
             </p>
           </div>
         ) : plan ? (
           // Completed Planner Card
-          <div className="glass-panel" style={{ padding: "1.25rem", borderLeft: `4px solid ${iterationCount > 1 ? "var(--amber-accent)" : "var(--accent-primary)"}`, animation: "fadeInCard 0.25s ease" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "0.6rem", marginBottom: "0.5rem" }}>
+          <div className={`glass-panel trace-card ${iterationCount > 1 ? "card-left-amber" : "card-left-indigo"}`}>
+            <div className="trace-card-header">
               <BrainCircuit size={18} color={iterationCount > 1 ? "var(--amber-accent)" : "var(--accent-primary)"} />
-              <h4 style={{ fontSize: "0.95rem", color: "var(--text-main)", fontWeight: "700" }}>
+              <h4 className="trace-card-title">
                 Agent 1: Planner {iterationCount > 1 ? `(Attempt #${iterationCount})` : ""}
               </h4>
-              <span style={{ fontSize: "0.75rem", color: iterationCount > 1 ? "var(--amber-accent)" : "var(--accent-primary)", marginLeft: "auto", fontWeight: "600", background: iterationCount > 1 ? "rgba(217, 119, 6, 0.08)" : "rgba(99, 102, 241, 0.08)", padding: "0.2rem 0.6rem", borderRadius: "12px", border: `1px solid ${iterationCount > 1 ? "rgba(217, 119, 6, 0.2)" : "rgba(99, 102, 241, 0.2)"}` }}>
+              <span className={`trace-count-badge ${iterationCount > 1 ? "revision" : "standard"}`}>
                 {plan.candidateSlots?.length || 1} Candidate Slot(s) Formulated
               </span>
             </div>
-            <div style={{ fontSize: "0.85rem", color: "var(--text-main)", marginBottom: "0.5rem" }}>
+            <div className="trace-card-meta">
               <strong>Objective:</strong> {plan.meetingObjective}
             </div>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
+            <div className="candidate-slots-grid">
               {plan.candidateSlots?.map((slot, i) => (
-                <div key={i} style={{ background: "rgba(99, 102, 241, 0.08)", border: "1px solid rgba(99, 102, 241, 0.25)", color: "var(--accent-primary)", padding: "0.4rem 0.75rem", borderRadius: "6px", fontSize: "0.8rem", fontWeight: "500" }}>
+                <div key={i} className="candidate-slot-chip">
                   🕒 {slot.date ? `${formatDateToDMY(slot.date)} • ` : ""}{slot.startTime} - {slot.endTime} ({slot.timezone || "Local"})
                 </div>
               ))}
@@ -401,17 +295,17 @@ export default function AgentWorkflowVisualizer({ result, isScheduling, activeAg
           </div>
         ) : isScheduling && (
           // Initial Working Card for Planner
-          <div className="glass-panel" style={{ padding: "1.25rem", border: "1.5px solid var(--accent-primary)", background: "rgba(99, 102, 241, 0.03)", animation: "fadeInCard 0.2s ease" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "0.6rem", marginBottom: "0.5rem" }}>
+          <div className="glass-panel trace-card card-border-indigo">
+            <div className="trace-card-header">
               <BrainCircuit size={18} color="var(--accent-primary)" />
-              <h4 style={{ fontSize: "0.95rem", color: "var(--text-main)", fontWeight: "700" }}>Agent 1: Planner</h4>
+              <h4 className="trace-card-title">Agent 1: Planner</h4>
               <PulsingStatusBadge
                 label="Formulating Candidate Slots..."
                 color="var(--accent-primary)"
                 bgColor="rgba(99, 102, 241, 0.12)"
               />
             </div>
-            <p style={{ fontSize: "0.85rem", color: "var(--text-muted)" }}>
+            <p className="trace-card-desc">
               Evaluating duration, time preferences, and cross-timezone attendee constraints across Kolkata, New York & London...
             </p>
           </div>
@@ -420,10 +314,10 @@ export default function AgentWorkflowVisualizer({ result, isScheduling, activeAg
         {/* 2. Agent 2: Executor */}
         {isScheduling && activeAgent === "executor" && iterationCount > 1 ? (
           // Active Revision Attempt on Executor
-          <div className="glass-panel" style={{ padding: "1.25rem", border: "1.5px solid var(--emerald-accent)", background: "rgba(5, 150, 105, 0.04)", animation: "fadeInCard 0.2s ease" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "0.6rem", marginBottom: "0.5rem" }}>
+          <div className="glass-panel trace-card card-border-emerald revision">
+            <div className="trace-card-header">
               <CalendarCheck size={18} color="var(--emerald-accent)" />
-              <h4 style={{ fontSize: "0.95rem", color: "var(--text-main)", fontWeight: "700" }}>
+              <h4 className="trace-card-title">
                 Agent 2: Executor (Revision Attempt #{iterationCount})
               </h4>
               <PulsingStatusBadge
@@ -432,39 +326,39 @@ export default function AgentWorkflowVisualizer({ result, isScheduling, activeAg
                 bgColor="rgba(5, 150, 105, 0.12)"
               />
             </div>
-            <p style={{ fontSize: "0.85rem", color: "var(--text-muted)" }}>
+            <p className="trace-card-desc">
               Verifying attendee busy slots for the newly proposed alternative time window and ensuring buffer compliance...
             </p>
           </div>
         ) : execution ? (
           // Completed Executor Card
-          <div className="glass-panel" style={{ padding: "1.25rem", borderLeft: `4px solid ${execution.hasConflict ? "var(--amber-accent)" : "var(--emerald-accent)"}`, animation: "fadeInCard 0.25s ease" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "0.6rem", marginBottom: "0.5rem" }}>
+          <div className={`glass-panel trace-card ${execution.hasConflict ? "card-left-amber" : "card-left-emerald"}`}>
+            <div className="trace-card-header">
               <CalendarCheck size={18} color={execution.hasConflict ? "var(--amber-accent)" : "var(--emerald-accent)"} />
-              <h4 style={{ fontSize: "0.95rem", color: "var(--text-main)", fontWeight: "700" }}>
+              <h4 className="trace-card-title">
                 Agent 2: Executor {iterationCount > 1 ? `(Attempt #${iterationCount})` : ""}
               </h4>
-              <span style={{ fontSize: "0.75rem", color: execution.hasConflict ? "var(--amber-accent)" : "var(--emerald-accent)", marginLeft: "auto", fontWeight: "600", background: execution.hasConflict ? "rgba(217, 119, 6, 0.08)" : "rgba(5, 150, 105, 0.08)", padding: "0.2rem 0.6rem", borderRadius: "12px", border: `1px solid ${execution.hasConflict ? "rgba(217, 119, 6, 0.2)" : "rgba(5, 150, 105, 0.2)"}` }}>
+              <span className={`trace-count-badge ${execution.hasConflict ? "revision" : "success"}`}>
                 {execution.hasConflict ? "Calendar Conflict Detected" : "Slot Verified Clean"}
               </span>
             </div>
-            <p style={{ fontSize: "0.85rem", color: "var(--text-muted)" }}>
+            <p className="trace-card-desc">
               {execution.hasConflict ? execution.conflictDetails : `Selected conflict-free slot: ${execution.selectedSlot?.date ? `${formatDateToDMY(execution.selectedSlot.date)} • ` : ""}${execution.selectedSlot?.startTime || execution.lockedSlot?.startTime || "15:00"} - ${execution.selectedSlot?.endTime || execution.lockedSlot?.endTime || "15:30"}`}
             </p>
           </div>
         ) : isScheduling && plan ? (
           // Initial Working Card for Executor
-          <div className="glass-panel" style={{ padding: "1.25rem", border: "1.5px solid var(--emerald-accent)", background: "rgba(5, 150, 105, 0.03)", animation: "fadeInCard 0.2s ease" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "0.6rem", marginBottom: "0.5rem" }}>
+          <div className="glass-panel trace-card card-border-emerald">
+            <div className="trace-card-header">
               <CalendarCheck size={18} color="var(--emerald-accent)" />
-              <h4 style={{ fontSize: "0.95rem", color: "var(--text-main)", fontWeight: "700" }}>Agent 2: Executor</h4>
+              <h4 className="trace-card-title">Agent 2: Executor</h4>
               <PulsingStatusBadge
                 label="Checking Calendar Buffers & Availability..."
                 color="var(--emerald-accent)"
                 bgColor="rgba(5, 150, 105, 0.12)"
               />
             </div>
-            <p style={{ fontSize: "0.85rem", color: "var(--text-muted)" }}>
+            <p className="trace-card-desc">
               Inspecting attendee calendar commitments, verifying buffer rules, and generating Google Meet room...
             </p>
           </div>
@@ -476,43 +370,43 @@ export default function AgentWorkflowVisualizer({ result, isScheduling, activeAg
         {/* 3. Agent 3: Validator */}
         {validation?.status === "NEEDS_REVISION" && isScheduling ? (
           // Active Revision Notice on Validator
-          <div className="glass-panel" style={{ padding: "1.25rem", borderLeft: "4px solid var(--amber-accent)", background: "rgba(217, 119, 6, 0.03)", animation: "fadeInCard 0.25s ease" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "0.6rem", marginBottom: "0.5rem" }}>
+          <div className="glass-panel trace-card card-left-amber">
+            <div className="trace-card-header">
               <ShieldCheck size={18} color="var(--amber-accent)" />
-              <h4 style={{ fontSize: "0.95rem", color: "var(--text-main)", fontWeight: "700" }}>Agent 3: Validator</h4>
-              <span style={{ fontSize: "0.75rem", color: "var(--amber-accent)", marginLeft: "auto", fontWeight: "700", background: "rgba(217, 119, 6, 0.12)", padding: "0.2rem 0.6rem", borderRadius: "12px" }}>
+              <h4 className="trace-card-title">Agent 3: Validator</h4>
+              <span className="trace-count-badge revision">
                 ⚠️ Conflict Flagged — Cyclic Revision Loop
               </span>
             </div>
-            <p style={{ fontSize: "0.85rem", color: "var(--text-muted)", marginBottom: "0.4rem" }}>
+            <p className="trace-card-desc" style={{ marginBottom: "0.4rem" }}>
               {validation.critique}
             </p>
             {validation.violations && validation.violations.length > 0 && (
-              <ul style={{ paddingLeft: "1.2rem", fontSize: "0.8rem", color: "var(--amber-accent)", fontWeight: "600", marginBottom: "0.5rem" }}>
+              <ul className="violations-list amber">
                 {validation.violations.map((v, i) => (
                   <li key={i}>{v}</li>
                 ))}
               </ul>
             )}
-            <div style={{ fontSize: "0.8rem", color: "var(--accent-primary)", fontWeight: "600", background: "rgba(99, 102, 241, 0.08)", padding: "0.45rem 0.75rem", borderRadius: "6px", display: "flex", alignItems: "center", gap: "0.4rem" }}>
+            <div className="cycle-loop-banner">
               <RotateCcw size={14} /> Cycled execution back to Agent 1 (Planner) & Agent 2 (Executor) for Attempt #{iterationCount}...
             </div>
           </div>
         ) : validation ? (
           // Completed Validator Card
-          <div className="glass-panel" style={{ padding: "1.25rem", borderLeft: `4px solid ${validation.status === "APPROVED" ? "var(--emerald-accent)" : "var(--rose-accent)"}`, animation: "fadeInCard 0.25s ease" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "0.6rem", marginBottom: "0.5rem" }}>
+          <div className={`glass-panel trace-card ${validation.status === "APPROVED" ? "card-left-emerald" : "card-left-rose"}`}>
+            <div className="trace-card-header">
               <ShieldCheck size={18} color={validation.status === "APPROVED" ? "var(--emerald-accent)" : "var(--rose-accent)"} />
-              <h4 style={{ fontSize: "0.95rem", color: "var(--text-main)", fontWeight: "700" }}>Agent 3: Validator</h4>
-              <span style={{ fontSize: "0.75rem", color: validation.status === "APPROVED" ? "var(--emerald-accent)" : "var(--rose-accent)", marginLeft: "auto", fontWeight: "600", background: validation.status === "APPROVED" ? "rgba(5, 150, 105, 0.08)" : "rgba(225, 29, 72, 0.08)", padding: "0.2rem 0.6rem", borderRadius: "12px", border: `1px solid ${validation.status === "APPROVED" ? "rgba(5, 150, 105, 0.2)" : "rgba(225, 29, 72, 0.2)"}` }}>
+              <h4 className="trace-card-title">Agent 3: Validator</h4>
+              <span className={`trace-count-badge ${validation.status === "APPROVED" ? "success" : "danger"}`}>
                 Verdict: {validation.status} {iterationCount > 1 ? `(Cycle #${iterationCount})` : ""}
               </span>
             </div>
-            <p style={{ fontSize: "0.85rem", color: "var(--text-muted)", marginBottom: "0.4rem" }}>
+            <p className="trace-card-desc" style={{ marginBottom: "0.4rem" }}>
               {validation.critique || (validation.status === "APPROVED" ? "All constraints verified and compliant." : "")}
             </p>
             {validation.violations && validation.violations.length > 0 && (
-              <ul style={{ paddingLeft: "1.2rem", fontSize: "0.8rem", color: "var(--rose-accent)", fontWeight: "500" }}>
+              <ul className="violations-list rose">
                 {validation.violations.map((v, i) => (
                   <li key={i}>{v}</li>
                 ))}
@@ -521,17 +415,17 @@ export default function AgentWorkflowVisualizer({ result, isScheduling, activeAg
           </div>
         ) : isScheduling && execution ? (
           // Active Working Card for Validator
-          <div className="glass-panel" style={{ padding: "1.25rem", border: "1.5px solid var(--accent-primary)", background: "rgba(99, 102, 241, 0.03)", animation: "fadeInCard 0.2s ease" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "0.6rem", marginBottom: "0.5rem" }}>
+          <div className="glass-panel trace-card card-border-indigo">
+            <div className="trace-card-header">
               <ShieldCheck size={18} color="var(--accent-primary)" />
-              <h4 style={{ fontSize: "0.95rem", color: "var(--text-main)", fontWeight: "700" }}>Agent 3: Validator</h4>
+              <h4 className="trace-card-title">Agent 3: Validator</h4>
               <PulsingStatusBadge
                 label="Auditing Guardrails & Policies..."
                 color="var(--accent-primary)"
                 bgColor="rgba(99, 102, 241, 0.12)"
               />
             </div>
-            <p style={{ fontSize: "0.85rem", color: "var(--text-muted)" }}>
+            <p className="trace-card-desc">
               Checking organizational guardrails, weekend restrictions, attendee preferences, and prompt safety...
             </p>
           </div>

@@ -1,12 +1,13 @@
-import React, { useState, useEffect } from "react";
-import { Calendar, Clock, Users, FileText, Send } from "lucide-react";
-import { formatDateToDMY } from "../utils/dateUtils";
+import { Calendar, Send } from "lucide-react";
+import { useEffect, useState } from "react";
 import { API_ENDPOINTS } from "../config/api";
+import { formatDateToDMY } from "../utils/dateUtils";
+import "./SchedulerForm.css";
 
 const INITIAL_TEAM_MEMBERS = [
-  { name: "Amal", email: "Uvamal11@gmail.com", role: "Product Manager", timezone: "Asia/Kolkata" },
-  { name: "Favas", email: "mohammedfavas888@gmail.com", role: "Tech Lead", timezone: "America/New_York" },
-  { name: "Bennet", email: "bennetsharwin76@gmail.com", role: "Senior Engineer", timezone: "Europe/London" }
+  // { name: "Amal", email: "Uvamal11@gmail.com", role: "Product Manager", timezone: "Asia/Kolkata" },
+  // { name: "Favas", email: "mohammedfavas888@gmail.com", role: "Tech Lead", timezone: "America/New_York" },
+  // { name: "Bennet", email: "bennetsharwin76@gmail.com", role: "Senior Engineer", timezone: "Europe/London" }
 ];
 
 const getTodayISO = () => {
@@ -24,7 +25,7 @@ export default function SchedulerForm({ onSubmit, isScheduling }) {
   const [durationMinutes, setDurationMinutes] = useState(30);
   const [timePreference, setTimePreference] = useState("afternoon");
   const [teamMembers, setTeamMembers] = useState(INITIAL_TEAM_MEMBERS);
-  const [selectedAttendees, setSelectedAttendees] = useState(["Uvamal11@gmail.com", "mohammedfavas888@gmail.com"]);
+  const [selectedAttendees, setSelectedAttendees] = useState([]);
   const [notes, setNotes] = useState("Discuss milestones and technical requirements");
 
   // Dynamically fetch attendees from RAG knowledge base (server/knowledge/attendee_profiles.json)
@@ -94,67 +95,43 @@ export default function SchedulerForm({ onSubmit, isScheduling }) {
   };
 
   return (
-    <div className="glass-panel" style={{ padding: "1.75rem" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.25rem", flexWrap: "wrap", gap: "0.5rem" }}>
-        <h2 style={{ fontSize: "1.25rem", fontWeight: "700", color: "var(--text-main)", display: "flex", alignItems: "center", gap: "0.5rem" }}>
+    <div className="glass-panel scheduler-panel">
+      <div className="scheduler-header">
+        <h2 className="scheduler-title">
           <Calendar size={20} color="var(--accent-primary)" />
           Meeting Request
         </h2>
 
         {/* Quick Presets */}
-        <div style={{ display: "flex", gap: "0.4rem" }}>
+        <div className="preset-group">
           <button
             type="button"
             onClick={() => handlePreset("standard")}
-            style={{
-              fontSize: "0.75rem",
-              fontWeight: "600",
-              padding: "0.3rem 0.65rem",
-              background: "rgba(5, 150, 105, 0.08)",
-              color: "var(--emerald-accent)",
-              borderRadius: "6px",
-              border: "1px solid rgba(5, 150, 105, 0.25)"
-            }}
+            className="preset-btn preset-standard"
           >
             Demo 1: Standard
           </button>
           <button
             type="button"
             onClick={() => handlePreset("conflict")}
-            style={{
-              fontSize: "0.75rem",
-              fontWeight: "600",
-              padding: "0.3rem 0.65rem",
-              background: "rgba(217, 119, 6, 0.08)",
-              color: "var(--amber-accent)",
-              borderRadius: "6px",
-              border: "1px solid rgba(217, 119, 6, 0.25)"
-            }}
+            className="preset-btn preset-conflict"
           >
             Demo 2: Conflict Loop
           </button>
           <button
             type="button"
             onClick={() => handlePreset("injection")}
-            style={{
-              fontSize: "0.75rem",
-              fontWeight: "600",
-              padding: "0.3rem 0.65rem",
-              background: "rgba(225, 29, 72, 0.08)",
-              color: "var(--rose-accent)",
-              borderRadius: "6px",
-              border: "1px solid rgba(225, 29, 72, 0.25)"
-            }}
+            className="preset-btn preset-injection"
           >
             Demo 3: Guardrail Block
           </button>
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
+      <form onSubmit={handleSubmit} className="scheduler-form">
         {/* Topic */}
-        <div>
-          <label style={{ display: "block", fontSize: "0.85rem", fontWeight: "500", color: "var(--text-muted)", marginBottom: "0.4rem" }}>
+        <div className="form-group">
+          <label className="form-label">
             Meeting Topic / Agenda Objective
           </label>
           <input
@@ -164,26 +141,17 @@ export default function SchedulerForm({ onSubmit, isScheduling }) {
             value={topic}
             onChange={(e) => setTopic(e.target.value)}
             placeholder="e.g. Sprint Planning, Roadmap Discussion"
-            style={{
-              width: "100%",
-              padding: "0.75rem 1rem",
-              background: "#ffffff",
-              border: "1px solid #cbd5e1",
-              borderRadius: "10px",
-              color: "var(--text-main)",
-              fontSize: "0.95rem",
-              boxShadow: "inset 0 1px 2px rgba(0,0,0,0.03)"
-            }}
+            className="form-input form-input-lg"
           />
         </div>
 
         {/* Date, Duration, Time Preference */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: "1rem" }}>
-          <div>
-            <label style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: "0.85rem", fontWeight: "500", color: "var(--text-muted)", marginBottom: "0.4rem" }}>
+        <div className="form-grid-three">
+          <div className="form-group">
+            <label className="form-label-row">
               <span>Preferred Date</span>
               {preferredDate < todayISO && (
-                <span style={{ fontWeight: "700", color: "var(--rose-accent)", fontSize: "0.75rem", background: "rgba(225, 29, 72, 0.1)", padding: "0.1rem 0.5rem", borderRadius: "6px" }}>
+                <span className="badge-date-warning">
                   ⚠️ Date has passed
                 </span>
               )}
@@ -195,35 +163,19 @@ export default function SchedulerForm({ onSubmit, isScheduling }) {
               min={todayISO}
               value={preferredDate}
               onChange={(e) => setPreferredDate(e.target.value)}
-              style={{
-                width: "100%",
-                padding: "0.7rem 0.9rem",
-                background: "#ffffff",
-                border: preferredDate < todayISO ? "1.5px solid var(--rose-accent)" : "1px solid #cbd5e1",
-                borderRadius: "10px",
-                color: "var(--text-main)",
-                fontSize: "0.9rem"
-              }}
+              className={`form-input ${preferredDate < todayISO ? "form-input-error" : ""}`}
             />
           </div>
 
-          <div>
-            <label style={{ display: "block", fontSize: "0.85rem", fontWeight: "500", color: "var(--text-muted)", marginBottom: "0.4rem" }}>
+          <div className="form-group">
+            <label className="form-label">
               Duration
             </label>
             <select
               id="meeting-duration-select"
               value={durationMinutes}
               onChange={(e) => setDurationMinutes(Number(e.target.value))}
-              style={{
-                width: "100%",
-                padding: "0.7rem 0.9rem",
-                background: "#ffffff",
-                border: "1px solid #cbd5e1",
-                borderRadius: "10px",
-                color: "var(--text-main)",
-                fontSize: "0.9rem"
-              }}
+              className="form-select"
             >
               <option value={15}>15 Minutes</option>
               <option value={30}>30 Minutes</option>
@@ -232,23 +184,15 @@ export default function SchedulerForm({ onSubmit, isScheduling }) {
             </select>
           </div>
 
-          <div>
-            <label style={{ display: "block", fontSize: "0.85rem", fontWeight: "500", color: "var(--text-muted)", marginBottom: "0.4rem" }}>
+          <div className="form-group">
+            <label className="form-label">
               Time Preference
             </label>
             <select
               id="meeting-time-preference-select"
               value={timePreference}
               onChange={(e) => setTimePreference(e.target.value)}
-              style={{
-                width: "100%",
-                padding: "0.7rem 0.9rem",
-                background: "#ffffff",
-                border: "1px solid #cbd5e1",
-                borderRadius: "10px",
-                color: "var(--text-main)",
-                fontSize: "0.9rem"
-              }}
+              className="form-select"
             >
               <option value="morning">Morning (09:00 - 12:00)</option>
               <option value="afternoon">Afternoon (14:00 - 17:00)</option>
@@ -259,13 +203,13 @@ export default function SchedulerForm({ onSubmit, isScheduling }) {
         </div>
 
         {/* Mandatory Attendees */}
-        <div>
-          <label style={{ display: "block", fontSize: "0.85rem", fontWeight: "500", color: "var(--text-muted)", marginBottom: "0.5rem" }}>
+        <div className="form-group">
+          <label className="attendees-label">
             Select Attendees (from Knowledge Base)
           </label>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: "0.5rem" }}>
+          <div className="attendees-list">
             {teamMembers.length === 0 ? (
-              <div style={{ padding: "0.75rem", textAlign: "center", color: "var(--text-muted)", fontSize: "0.85rem", background: "#f8fafc", borderRadius: "8px", border: "1px dashed #cbd5e1" }}>
+              <div className="attendees-syncing">
                 ⏳ Syncing attendee profiles from knowledge base...
               </div>
             ) : teamMembers.map((member) => {
@@ -274,36 +218,25 @@ export default function SchedulerForm({ onSubmit, isScheduling }) {
                 <div
                   key={member.email}
                   onClick={() => toggleAttendee(member.email)}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    padding: "0.65rem 0.9rem",
-                    borderRadius: "10px",
-                    background: isSelected ? "rgba(99, 102, 241, 0.06)" : "#ffffff",
-                    border: `1px solid ${isSelected ? "rgba(99, 102, 241, 0.4)" : "#e2e8f0"}`,
-                    cursor: "pointer",
-                    transition: "all 0.15s ease",
-                    boxShadow: "0 1px 2px rgba(0,0,0,0.02)"
-                  }}
+                  className={`attendee-card ${isSelected ? "selected" : ""}`}
                 >
-                  <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+                  <div className="attendee-info">
                     <input
                       type="checkbox"
                       checked={isSelected}
                       readOnly
-                      style={{ cursor: "pointer", accentColor: "var(--accent-primary)" }}
+                      className="attendee-checkbox"
                     />
                     <div>
-                      <div style={{ fontSize: "0.9rem", fontWeight: "600", color: "var(--text-main)" }}>
+                      <div className="attendee-name">
                         {member.name}
                       </div>
-                      <div style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>
+                      <div className="attendee-meta">
                         {member.email} • {member.role}
                       </div>
                     </div>
                   </div>
-                  <span style={{ fontSize: "0.75rem", color: "var(--cyan-accent)", background: "rgba(2, 132, 199, 0.08)", padding: "0.2rem 0.55rem", borderRadius: "4px", fontWeight: "500" }}>
+                  <span className="attendee-timezone">
                     {member.timezone}
                   </span>
                 </div>
@@ -313,8 +246,8 @@ export default function SchedulerForm({ onSubmit, isScheduling }) {
         </div>
 
         {/* Notes */}
-        <div>
-          <label style={{ display: "block", fontSize: "0.85rem", fontWeight: "500", color: "var(--text-muted)", marginBottom: "0.4rem" }}>
+        <div className="form-group">
+          <label className="form-label">
             Context & Meeting Notes
           </label>
           <textarea
@@ -323,16 +256,7 @@ export default function SchedulerForm({ onSubmit, isScheduling }) {
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             placeholder="Add any specific context or constraints..."
-            style={{
-              width: "100%",
-              padding: "0.6rem 0.9rem",
-              background: "#ffffff",
-              border: "1px solid #cbd5e1",
-              borderRadius: "10px",
-              color: "var(--text-main)",
-              fontSize: "0.9rem",
-              resize: "vertical"
-            }}
+            className="form-textarea"
           />
         </div>
 
@@ -341,20 +265,7 @@ export default function SchedulerForm({ onSubmit, isScheduling }) {
           id="submit-schedule-btn"
           type="submit"
           disabled={isScheduling}
-          style={{
-            background: isScheduling ? "rgba(99, 102, 241, 0.5)" : "var(--accent-gradient)",
-            color: "#ffffff",
-            padding: "0.9rem 1.5rem",
-            borderRadius: "12px",
-            fontWeight: "600",
-            fontSize: "1rem",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: "0.5rem",
-            boxShadow: isScheduling ? "none" : "0 4px 15px rgba(79, 70, 229, 0.35)",
-            cursor: isScheduling ? "not-allowed" : "pointer"
-          }}
+          className="scheduler-submit-btn"
         >
           {isScheduling ? (
             <>

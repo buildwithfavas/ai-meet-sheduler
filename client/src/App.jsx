@@ -155,24 +155,10 @@ export default function App() {
   };
 
   return (
-    <div style={{ maxWidth: "1280px", margin: "0 auto", padding: "1.5rem" }}>
+    <div className="app-container">
       {/* Toast Alert */}
       {toastMessage && (
-        <div style={{
-          position: "fixed",
-          top: "1.5rem",
-          right: "1.5rem",
-          zIndex: 9999,
-          background: "#ffffff",
-          border: "1px solid #cbd5e1",
-          color: "var(--text-main)",
-          padding: "0.8rem 1.25rem",
-          borderRadius: "10px",
-          boxShadow: "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.06)",
-          fontSize: "0.875rem",
-          fontWeight: "500",
-          animation: "slideIn 0.2s ease"
-        }}>
+        <div className="app-toast">
           {toastMessage}
         </div>
       )}
@@ -186,12 +172,7 @@ export default function App() {
       />
 
       {/* Main Grid: Form on Left, Agent Visualizer on Right */}
-      <div style={{
-        display: "grid",
-        gridTemplateColumns: "repeat(auto-fit, minmax(380px, 1fr))",
-        gap: "2rem",
-        alignItems: "start"
-      }}>
+      <div className="app-main-grid">
         {/* Left Column: Form */}
         <SchedulerForm
           onSubmit={handleScheduleSubmit}

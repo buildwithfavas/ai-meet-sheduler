@@ -1,0 +1,140 @@
+.header-container {
+  padding: 1.25rem 2rem;
+  margin-bottom: 2rem;
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+/* Title and Branding */
+.header-brand {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.header-logo-badge {
+  background: var(--accent-gradient);
+  padding: 0.75rem;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 15px rgba(79, 70, 229, 0.3);
+}
+
+.header-title-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.header-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.header-badge {
+  background: rgba(99, 102, 241, 0.1);
+  color: var(--accent-primary);
+  padding: 0.2rem 0.65rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border: 1px solid rgba(99, 102, 241, 0.25);
+}
+
+.header-subtitle {
+  color: var(--text-muted);
+  font-size: 0.875rem;
+}
+
+/* Status Indicators & Action Buttons */
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.header-status-indicator {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #f1f5f9;
+  padding: 0.45rem 0.9rem;
+  border-radius: 10px;
+  border: 1px solid var(--border-color);
+  font-size: 0.85rem;
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #ef4444;
+  box-shadow: none;
+  transition: all 0.2s ease;
+}
+
+.status-dot.online {
+  background-color: #10b981;
+  box-shadow: 0 0 8px #10b981;
+}
+
+.status-label {
+  color: var(--text-muted);
+}
+
+.status-value {
+  color: var(--text-main);
+  font-weight: 600;
+}
+
+/* Action Buttons */
+.header-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 0.9rem;
+  border-radius: 10px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.header-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.header-btn-ping {
+  background: rgba(99, 102, 241, 0.08);
+  color: var(--accent-primary);
+  border: 1px solid rgba(99, 102, 241, 0.25);
+}
+
+.header-btn-ping:hover:not(:disabled) {
+  background: rgba(99, 102, 241, 0.14);
+}
+
+.header-btn-ping:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.header-btn-knowledge {
+  background: rgba(2, 132, 199, 0.08);
+  color: var(--cyan-accent);
+  border: 1px solid rgba(2, 132, 199, 0.25);
+}
+
+.header-btn-knowledge:hover {
+  background: rgba(2, 132, 199, 0.14);
+}
