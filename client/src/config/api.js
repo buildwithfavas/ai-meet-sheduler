@@ -8,5 +8,6 @@ export const API_ENDPOINTS = {
   TEST_CONNECTION: `${API_BASE_URL}/test-connection`,
   KNOWLEDGE: `${API_BASE_URL}/knowledge`,
   SCHEDULE: `${API_BASE_URL}/schedule`,
-  SCHEDULE_STREAM: `${API_BASE_URL}/schedule/stream`
+  SCHEDULE_STREAM: `${API_BASE_URL}/schedule/stream`,
+  MEETINGS: `${API_BASE_URL}/meetings`
 };

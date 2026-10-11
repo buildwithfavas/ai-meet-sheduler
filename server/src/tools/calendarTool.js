@@ -2,6 +2,9 @@ import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import { timeToMinutes } from "../utils/dateTimeUtils.js";
+import { connectDB } from "../config/db.js";
+import { Meeting } from "../models/Meeting.js";
+import { CalendarEvent } from "../models/CalendarEvent.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -31,67 +34,79 @@ export function getAttendeeProfiles() {
 }
 
 /**
- * In-memory Mock Calendar Store keyed by attendee emails from attendee_profiles.json
+ * Seeds default baseline calendar events into MongoDB if database collection is empty
  */
-const CALENDAR_STORE = {};
+async function ensureCalendarInitialized() {
+  await connectDB();
 
-function ensureCalendarInitialized() {
-  const profiles = getAttendeeProfiles();
-  if (profiles.length > 0 && Object.keys(CALENDAR_STORE).length === 0) {
+  const count = await CalendarEvent.countDocuments();
+  if (count === 0) {
+    console.log("🍃 [MongoDB] Seeding initial baseline calendar events into database...");
+    const profiles = getAttendeeProfiles();
+    const seedEvents = [];
+
     profiles.forEach((profile, idx) => {
       const email = profile.email?.toLowerCase();
       if (!email) return;
 
       if (idx === 0) {
-        CALENDAR_STORE[email] = [
-          { date: "2026-10-14", startTime: "10:00", endTime: "11:00", title: "Product Roadmap Sync" },
-          { date: "2026-10-14", startTime: "14:00", endTime: "15:00", title: "Sprint Planning Session" }
-        ];
+        seedEvents.push(
+          { attendee: email, date: "2026-10-14", startTime: "10:00", endTime: "11:00", title: "Product Roadmap Sync" },
+          { attendee: email, date: "2026-10-14", startTime: "14:00", endTime: "15:00", title: "Sprint Planning Session" }
+        );
       } else if (idx === 1) {
-        CALENDAR_STORE[email] = [
-          { date: "2026-10-14", startTime: "14:30", endTime: "16:00", title: "Architecture & Code Review" }
-        ];
+        seedEvents.push(
+          { attendee: email, date: "2026-10-14", startTime: "14:30", endTime: "16:00", title: "Architecture & Code Review" }
+        );
       } else if (idx === 2) {
-        CALENDAR_STORE[email] = [
-          { date: "2026-10-14", startTime: "11:00", endTime: "12:00", title: "Tech Team Retro" }
-        ];
-      } else {
-        CALENDAR_STORE[email] = [];
+        seedEvents.push(
+          { attendee: email, date: "2026-10-14", startTime: "11:00", endTime: "12:00", title: "Tech Team Retro" }
+        );
       }
     });
+
+    if (seedEvents.length > 0) {
+      await CalendarEvent.insertMany(seedEvents);
+      console.log(`✅ [MongoDB] Seeded ${seedEvents.length} initial calendar events.`);
+    }
   }
 }
 
-
 /**
- * Calendar Tool for querying availability and booking
+ * Calendar Tool for querying availability and booking via MongoDB
  */
 export const CalendarTool = {
   /**
-   * Returns busy intervals for requested attendees on a given date
+   * Returns busy intervals from MongoDB for requested attendees on a given date
    */
-  getBusySlots(date, attendeeEmails) {
-    ensureCalendarInitialized();
-    const results = [];
-    for (const email of attendeeEmails) {
-      const events = CALENDAR_STORE[email.toLowerCase()] || [];
-      const dayEvents = events.filter(e => e.date === date);
-      results.push(...dayEvents.map(e => ({ attendee: email, ...e })));
-    }
-    return results;
+  async getBusySlots(date, attendeeEmails = []) {
+    await ensureCalendarInitialized();
+
+    const normalizedEmails = attendeeEmails.map(e => e.toLowerCase().trim());
+    const events = await CalendarEvent.find({
+      date,
+      attendee: { $in: normalizedEmails }
+    }).lean();
+
+    return events.map(e => ({
+      attendee: e.attendee,
+      date: e.date,
+      startTime: e.startTime,
+      endTime: e.endTime,
+      title: e.title
+    }));
   },
 
   /**
    * Verifies if a given slot is available for all attendees, accounting for 15-min buffers
    */
-  checkSlotAvailability(date, startTime, endTime, attendeeEmails) {
-    ensureCalendarInitialized();
+  async checkSlotAvailability(date, startTime, endTime, attendeeEmails = []) {
     const startMins = timeToMinutes(startTime);
     const endMins = timeToMinutes(endTime);
     const bufferMins = 15; // Company policy 15-minute buffer requirement
 
     const conflicts = [];
-    const busySlots = this.getBusySlots(date, attendeeEmails);
+    const busySlots = await this.getBusySlots(date, attendeeEmails);
 
     for (const slot of busySlots) {
       const busyStart = timeToMinutes(slot.startTime);
@@ -126,28 +141,61 @@ export const CalendarTool = {
   },
 
   /**
-   * Commits the meeting booking to the calendar store
+   * Commits the meeting booking to MongoDB Meeting & CalendarEvent collections
    */
-  bookMeeting(meeting) {
-    ensureCalendarInitialized();
-    for (const email of meeting.attendees) {
-      const normalized = email.toLowerCase();
-      if (!CALENDAR_STORE[normalized]) {
-        CALENDAR_STORE[normalized] = [];
-      }
-      CALENDAR_STORE[normalized].push({
-        date: meeting.date,
-        startTime: meeting.startTime,
-        endTime: meeting.endTime,
-        title: meeting.title
-      });
+  async bookMeeting(meeting) {
+    await ensureCalendarInitialized();
+
+    const bookingId = `MEET-${Date.now()}`;
+    const meetingLink = meeting.meetingLink || generateGoogleMeetLink();
+    const normalizedAttendees = (meeting.attendees || []).map(a => a.toLowerCase().trim());
+
+    // 1. Save Meeting document into MongoDB
+    const newMeeting = await Meeting.create({
+      bookingId,
+      title: meeting.title,
+      date: meeting.date,
+      startTime: meeting.startTime,
+      endTime: meeting.endTime,
+      durationMinutes: meeting.durationMinutes || 30,
+      attendees: normalizedAttendees,
+      agenda: meeting.agenda || [],
+      meetingLink,
+      googleCalendarUrl: meeting.googleCalendarUrl || "",
+      status: "CONFIRMED"
+    });
+
+    console.log(`🍃 [MongoDB] Saved scheduled meeting "${meeting.title}" (ID: ${bookingId}) to database.`);
+
+    // 2. Insert busy blocks into CalendarEvent for all attendees in MongoDB
+    const attendeeCalendarBlocks = normalizedAttendees.map(email => ({
+      attendee: email,
+      date: meeting.date,
+      startTime: meeting.startTime,
+      endTime: meeting.endTime,
+      title: `Meeting: ${meeting.title}`,
+      bookingId
+    }));
+
+    if (attendeeCalendarBlocks.length > 0) {
+      await CalendarEvent.insertMany(attendeeCalendarBlocks);
+      console.log(`🍃 [MongoDB] Added calendar busy events for ${normalizedAttendees.length} attendee(s).`);
     }
 
     return {
       success: true,
-      bookingId: `MEET-${Date.now()}`,
-      meetingLink: meeting.meetingLink || generateGoogleMeetLink(),
-      confirmedAttendees: meeting.attendees
+      bookingId,
+      meetingLink,
+      confirmedAttendees: normalizedAttendees,
+      meetingDoc: newMeeting
     };
+  },
+
+  /**
+   * Fetches all scheduled meetings from MongoDB
+   */
+  async getAllMeetings() {
+    await connectDB();
+    return await Meeting.find().sort({ createdAt: -1 }).lean();
   }
 };

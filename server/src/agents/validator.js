@@ -128,8 +128,8 @@ Respond with ONLY valid JSON:
   let updatedDraft = { ...execution.draftInvite };
 
   if (validationResult.status === "APPROVED") {
-    // 1. Commit booking to internal store
-    const bookingReceipt = CalendarTool.bookMeeting(updatedDraft);
+    // 1. Commit booking to MongoDB database
+    const bookingReceipt = await CalendarTool.bookMeeting(updatedDraft);
     console.log(`🎉 [Agent 3: Validator] APPROVED! Meeting successfully booked (Receipt: ${bookingReceipt.bookingId}).`);
 
     // 2. Generate Google Calendar direct-add URL

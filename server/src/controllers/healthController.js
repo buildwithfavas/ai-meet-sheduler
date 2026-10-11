@@ -1,5 +1,6 @@
 import { getLLM } from "../config/llm.js";
 import { HumanMessage } from "@langchain/core/messages";
+import mongoose from "mongoose";
 
 export const healthController = {
   /**
@@ -12,7 +13,8 @@ export const healthController = {
       ollamaModel: process.env.OLLAMA_MODEL || "llama3.2:latest",
       openRouterModel: process.env.OPENROUTER_MODEL || "openai/gpt-4o",
       openRouterConfigured: Boolean(process.env.OPENROUTER_API_KEY && process.env.OPENROUTER_API_KEY.startsWith("sk-or-")),
-      emailConfigured: Boolean(process.env.EMAIL_USER && process.env.EMAIL_PASS)
+      emailConfigured: Boolean(process.env.EMAIL_USER && process.env.EMAIL_PASS),
+      mongoConnected: mongoose.connection.readyState === 1
     });
   },
 

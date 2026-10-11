@@ -221,13 +221,30 @@ export const meetingController = {
 
   /**
    * GET /api/calendar
-   * Returns calendar availability for a given date dynamically
+   * Returns calendar availability for a given date dynamically from MongoDB
    */
-  getCalendar(req, res) {
-    const date = req.query.date || "2026-10-15";
-    const profiles = getAttendeeProfiles();
-    const attendees = req.query.attendees ? req.query.attendees.split(",") : profiles.map(p => p.email);
-    const busySlots = CalendarTool.getBusySlots(date, attendees);
-    res.json({ date, busySlots });
+  async getCalendar(req, res) {
+    try {
+      const date = req.query.date || "2026-10-15";
+      const profiles = getAttendeeProfiles();
+      const attendees = req.query.attendees ? req.query.attendees.split(",") : profiles.map(p => p.email);
+      const busySlots = await CalendarTool.getBusySlots(date, attendees);
+      res.json({ date, busySlots });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  },
+
+  /**
+   * GET /api/meetings
+   * Returns all scheduled meetings stored in MongoDB
+   */
+  async getMeetings(req, res) {
+    try {
+      const meetings = await CalendarTool.getAllMeetings();
+      res.json({ success: true, count: meetings.length, meetings });
+    } catch (error) {
+      res.status(500).json({ success: false, error: error.message });
+    }
   }
 };

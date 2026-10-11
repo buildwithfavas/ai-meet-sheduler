@@ -16,7 +16,7 @@ export async function executorNode(state) {
   let draftInvite = null;
 
   for (const slot of candidateSlots) {
-    const check = CalendarTool.checkSlotAvailability(slot.date, slot.startTime, slot.endTime, attendees);
+    const check = await CalendarTool.checkSlotAvailability(slot.date, slot.startTime, slot.endTime, attendees);
     
     if (check.available) {
       selectedSlot = slot;
