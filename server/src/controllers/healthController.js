@@ -1,14 +1,10 @@
 import { getLLM } from "../config/llm.js";
 import { HumanMessage } from "@langchain/core/messages";
 
-/**
- * Health Controller
- * Handles system health checks and LLM connectivity tests
- */
 export const healthController = {
   /**
    * GET /api/health
-   */
+   */ 
   getHealth(req, res) {
     res.json({
       status: "online",

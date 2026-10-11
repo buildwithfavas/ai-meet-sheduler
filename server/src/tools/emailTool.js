@@ -6,14 +6,14 @@ import { formatDateDMY } from "../utils/dateTimeUtils.js";
  * Creates nodemailer transporter based on environment or creates a test account on the fly
  */
 async function getTransporter() {
-  const host = process.env.EMAIL_HOST || process.env.SMTP_HOST;
-  const user = process.env.EMAIL_USER || process.env.SMTP_USER;
-  const rawPass = process.env.EMAIL_PASS || process.env.SMTP_PASS;
-  const port = Number(process.env.EMAIL_PORT || process.env.SMTP_PORT) || 465;
+  const host = process.env.EMAIL_HOST;
+  const user = process.env.EMAIL_USER;
+  const rawPass = process.env.EMAIL_PASS;
+  const port = Number(process.env.EMAIL_PORT) || 465;
 
   if (host && user && rawPass) {
     const pass = rawPass.trim().replace(/\s+/g, "");
-    const isSecure = port === 465 || process.env.EMAIL_SECURE === "true" || process.env.SMTP_SECURE === "true";
+    const isSecure = port === 465;
 
     console.log(`📡 [Email Tool] Connecting to SMTP server ${host}:${port} as ${user}...`);
 

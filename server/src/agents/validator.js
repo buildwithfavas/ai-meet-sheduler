@@ -8,7 +8,7 @@ import { timeToMinutes, formatDateDMY } from "../utils/dateTimeUtils.js";
 /**
  * Deterministic Policy Guardrail Check
  */
-function evaluateDeterministicRules(slot, ragContext) {
+function evaluateDeterministicRules(slot) {
   const violations = [];
   if (!slot) {
     violations.push("No candidate slot was available without calendar conflicts.");
@@ -59,7 +59,7 @@ export async function validatorNode(state) {
   console.log(`\n🔍 [Agent 3: Validator] Auditing draft schedule against guardrails and policies...`);
 
   const slot = execution?.selectedSlot;
-  const deterministicViolations = evaluateDeterministicRules(slot, ragContext);
+  const deterministicViolations = evaluateDeterministicRules(slot);
 
   // If there's an active execution conflict
   if (execution?.hasConflict && execution?.conflictDetails) {

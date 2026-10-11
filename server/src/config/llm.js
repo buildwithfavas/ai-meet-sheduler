@@ -6,8 +6,6 @@ import { ChatOllama } from "@langchain/ollama";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-
-// Ensure .env is always loaded from server/.env
 dotenv.config({ path: path.resolve(__dirname, "../../.env") });
 
 /**
@@ -60,21 +58,17 @@ export function getLLM(preferredProvider = process.env.LLM_PROVIDER || "ollama")
   const ollama = createOllamaModel();
   const openRouter = createOpenRouterModel();
 
-  // If OpenRouter is not configured, always return Ollama
   if (!openRouter) {
     return ollama;
   }
 
   if (provider === "ollama") {
-    // Primary: Ollama -> Fallback: OpenRouter
     return ollama.withFallbacks({ fallbacks: [openRouter] });
   }
 
   if (provider === "openrouter") {
-    // Primary: OpenRouter -> Fallback: Ollama
     return openRouter.withFallbacks({ fallbacks: [ollama] });
   }
 
-  // Default: Ollama primary with OpenRouter fallback
   return ollama.withFallbacks({ fallbacks: [openRouter] });
 }
