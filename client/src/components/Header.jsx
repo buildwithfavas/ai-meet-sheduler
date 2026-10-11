@@ -2,9 +2,7 @@ import React from "react";
 import { Bot, RefreshCw, BookOpen } from "lucide-react";
 import "./Header.css";
 
-export default function Header({ serverHealth, onOpenPolicies, onTestConnection, testingConnection }) {
-  const isOnline = serverHealth?.status === "online";
-
+export default function Header({ onOpenPolicies, onTestConnection, testingConnection }) {
   return (
     <header className="glass-panel header-container">
       <div className="header-content">
@@ -30,14 +28,6 @@ export default function Header({ serverHealth, onOpenPolicies, onTestConnection,
 
         {/* Status Indicators & Action Buttons */}
         <div className="header-actions">
-          {/* Active Model Indicator */}
-          <div className="header-status-indicator">
-            <div className={`status-dot ${isOnline ? "online" : ""}`} />
-            <span className="status-label">Backend:</span>
-            <span className="status-value">
-              {serverHealth?.activeProvider === "ollama" ? "Ollama (Primary) + OpenRouter (Fallback)" : "OpenRouter"}
-            </span>
-          </div>
 
           {/* Test Connection Button */}
           <button

@@ -3,6 +3,8 @@ import path from "path";
 import { fileURLToPath } from "url";
 import { buildSchedulerGraph } from "../graph/schedulerGraph.js";
 import { CalendarTool, getAttendeeProfiles } from "../tools/calendarTool.js";
+import { getLLM } from "../config/llm.js";
+import { HumanMessage } from "@langchain/core/messages";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -245,6 +247,37 @@ export const meetingController = {
       res.json({ success: true, count: meetings.length, meetings });
     } catch (error) {
       res.status(500).json({ success: false, error: error.message });
+    }
+  },
+
+  /**
+   * POST /api/test-connection
+   * Tests connectivity and latency of configured LLM
+   */
+  async testConnection(req, res) {
+    const { provider } = req.body;
+    const targetProvider = provider || process.env.LLM_PROVIDER || "ollama";
+    const startTime = Date.now();
+
+    try {
+      const llm = getLLM(targetProvider);
+      const response = await llm.invoke([
+        new HumanMessage("Respond with: 'AI Connection verified' and model name.")
+      ]);
+      const duration = ((Date.now() - startTime) / 1000).toFixed(2);
+
+      res.json({
+        success: true,
+        provider: targetProvider,
+        latencySeconds: duration,
+        response: typeof response.content === "string" ? response.content.trim() : JSON.stringify(response.content)
+      });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        provider: targetProvider,
+        error: error.message
+      });
     }
   }
 };

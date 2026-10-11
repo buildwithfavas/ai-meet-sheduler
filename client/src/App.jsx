@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import Header from "./components/Header";
 import SchedulerForm from "./components/SchedulerForm";
 import AgentWorkflowVisualizer from "./components/AgentWorkflowVisualizer";
@@ -6,7 +6,6 @@ import KnowledgeModal from "./components/KnowledgeModal";
 import { API_ENDPOINTS } from "./config/api";
 
 export default function App() {
-  const [serverHealth, setServerHealth] = useState(null);
   const [isScheduling, setIsScheduling] = useState(false);
   const [result, setResult] = useState(null);
   const [isKnowledgeOpen, setIsKnowledgeOpen] = useState(false);
@@ -16,22 +15,6 @@ export default function App() {
   const [activeAgent, setActiveAgent] = useState(null);
   const [activeMessage, setActiveMessage] = useState("");
   const [liveWorkflow, setLiveWorkflow] = useState(null);
-
-  const fetchHealth = async () => {
-    try {
-      const res = await fetch(API_ENDPOINTS.HEALTH);
-      const data = await res.json();
-      setServerHealth(data);
-    } catch {
-      setServerHealth({ status: "offline" });
-    }
-  };
-
-  useEffect(() => {
-    fetchHealth();
-    const interval = setInterval(fetchHealth, 10000);
-    return () => clearInterval(interval);
-  }, []);
 
   const handleTestConnection = async () => {
     setTestingConnection(true);
@@ -165,7 +148,6 @@ export default function App() {
 
       {/* Header */}
       <Header
-        serverHealth={serverHealth}
         onOpenPolicies={() => setIsKnowledgeOpen(true)}
         onTestConnection={handleTestConnection}
         testingConnection={testingConnection}

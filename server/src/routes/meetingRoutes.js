@@ -8,5 +8,6 @@ router.post("/schedule/stream", meetingController.scheduleMeetingStream);
 router.get("/knowledge", meetingController.getKnowledge);
 router.get("/calendar", meetingController.getCalendar);
 router.get("/meetings", meetingController.getMeetings);
+router.post("/test-connection", meetingController.testConnection);
 
 export default router;
