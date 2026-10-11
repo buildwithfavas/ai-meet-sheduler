@@ -201,12 +201,7 @@ export default function AgentWorkflowVisualizer({ result, isScheduling, activeAg
                 <div>
                   <div className="email-status-title">
                     {confirmedInvite.emailDelivery.isSimulated ? (
-                      <>
-                        <span>Email Invites Simulated (Dev Mode)</span>
-                        <span className="dev-mode-badge">
-                          EMAIL_ENABLED=false
-                        </span>
-                      </>
+                      <span>Email Invites Simulated</span>
                     ) : (
                       <span>Email Invites Dispatched via Gmail SMTP</span>
                     )}
