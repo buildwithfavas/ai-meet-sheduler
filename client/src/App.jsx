@@ -30,7 +30,7 @@ export default function App() {
       } else {
         setToastMessage(`❌ Ping Failed: ${data.error}`);
       }
-    } catch (err) {
+    } catch {
       setToastMessage(`❌ Error: Backend server unreachable on port 5000`);
     } finally {
       setTestingConnection(false);

@@ -93,12 +93,10 @@ function routeAfterValidator(state) {
     return "complete";
   }
 
-  // Check loop guardrail
   if (isLoopLimitExceeded(state.iterationCount)) {
     return "escalate";
   }
 
-  // Cycle back to Planner with Validator's feedback
   console.log(`\n🔁 [LangGraph Cyclic Edge] Routing back to Planner Agent for Revision (Count: ${state.iterationCount})...`);
   return "planner";
 }

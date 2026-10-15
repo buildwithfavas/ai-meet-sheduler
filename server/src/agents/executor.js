@@ -1,4 +1,5 @@
-import { CalendarTool, generateGoogleMeetLink } from "../tools/calendarTool.js";
+import { CalendarTool, generateGoogleMeetLink, getAttendeeProfiles } from "../tools/calendarTool.js";
+import { computeAttendeeLocalTimes } from "../utils/dateTimeUtils.js";
 
 /**
  * Executor Agent Node
@@ -17,7 +18,7 @@ export async function executorNode(state) {
 
   for (const slot of candidateSlots) {
     const check = await CalendarTool.checkSlotAvailability(slot.date, slot.startTime, slot.endTime, attendees);
-    
+
     if (check.available) {
       selectedSlot = slot;
       break;
@@ -29,6 +30,18 @@ export async function executorNode(state) {
   }
 
   if (selectedSlot) {
+    const profiles = getAttendeeProfiles().filter(p =>
+      attendees.some(a => a.toLowerCase() === p.email.toLowerCase())
+    );
+
+    const attendeeTimes = computeAttendeeLocalTimes(
+      selectedSlot.date,
+      selectedSlot.startTime,
+      selectedSlot.endTime,
+      selectedSlot.timezone || "Asia/Kolkata",
+      profiles
+    );
+
     // Generate draft booking with Google Meet video link
     draftInvite = {
       title: plan.meetingObjective || userRequest.topic,
@@ -36,12 +49,18 @@ export async function executorNode(state) {
       startTime: selectedSlot.startTime,
       endTime: selectedSlot.endTime,
       durationMinutes: plan.durationMinutes || userRequest.durationMinutes,
+      timezone: selectedSlot.timezone || "Asia/Kolkata",
       attendees,
+      attendeeTimes,
       agenda: plan.agendaDraft || ["Sync & Discussion"],
       meetingLink: generateGoogleMeetLink()
     };
+
     console.log(`✅ [Agent 2: Executor] Successfully locked slot: ${selectedSlot.date} ${selectedSlot.startTime} - ${selectedSlot.endTime}`);
     console.log(`📹 [Agent 2: Executor] Assigned Google Meet room: ${draftInvite.meetingLink}`);
+    if (attendeeTimes.length > 0) {
+      console.log(`🌐 [Agent 2: Executor] Local Times: ${attendeeTimes.map(t => `${t.attendee}: ${t.localTime}`).join(" | ")}`);
+    }
   } else {
     console.log(`❌ [Agent 2: Executor] All proposed candidate slots have calendar conflicts.`);
   }

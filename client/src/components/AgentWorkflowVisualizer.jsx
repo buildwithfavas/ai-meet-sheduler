@@ -57,7 +57,7 @@ export default function AgentWorkflowVisualizer({ result, isScheduling, activeAg
   }
 
   const currentData = result || liveWorkflow || {};
-  const { finalStatus, confirmedInvite, plan, execution, validation, iterationCount = 1, logs } = currentData;
+  const { finalStatus, confirmedInvite, plan, execution, validation, iterationCount = 1 } = currentData;
 
   const isSuccess = finalStatus === "SUCCESS";
   const isBlocked = finalStatus === "GUARDRAIL_BLOCKED";
@@ -235,6 +235,22 @@ export default function AgentWorkflowVisualizer({ result, isScheduling, activeAg
                   <li key={i}>{item}</li>
                 ))}
               </ul>
+            </div>
+          )}
+
+          {/* Attendee Local Times */}
+          {confirmedInvite.attendeeTimes && confirmedInvite.attendeeTimes.length > 0 && (
+            <div className="attendee-times-box" style={{ marginTop: "14px", padding: "10px 14px", background: "rgba(255, 255, 255, 0.03)", borderRadius: "8px", border: "1px solid rgba(255, 255, 255, 0.08)" }}>
+              <div style={{ fontSize: "12px", color: "var(--text-muted)", marginBottom: "6px", fontWeight: "600", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                🌐 Attendee Local Times:
+              </div>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
+                {confirmedInvite.attendeeTimes.map((at, idx) => (
+                  <span key={idx} style={{ fontSize: "12px", background: "rgba(99, 102, 241, 0.12)", color: "#a5b4fc", padding: "4px 8px", borderRadius: "6px", border: "1px solid rgba(99, 102, 241, 0.2)" }}>
+                    <strong>{at.attendee}:</strong> {at.localTime}
+                  </span>
+                ))}
+              </div>
             </div>
           )}
         </div>

@@ -8,16 +8,23 @@ export default function KnowledgeModal({ isOpen, onClose }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let ignore = false;
     if (isOpen) {
-      setLoading(true);
       fetch(API_ENDPOINTS.KNOWLEDGE)
         .then((res) => res.json())
         .then((data) => {
-          setKnowledge(data);
-          setLoading(false);
+          if (!ignore) {
+            setKnowledge(data);
+            setLoading(false);
+          }
         })
-        .catch(() => setLoading(false));
+        .catch(() => {
+          if (!ignore) setLoading(false);
+        });
     }
+    return () => {
+      ignore = true;
+    };
   }, [isOpen]);
 
   if (!isOpen) return null;

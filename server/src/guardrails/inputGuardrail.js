@@ -1,5 +1,5 @@
 import { MeetingRequestInputSchema } from "./schemas.js";
-import { formatDateDMY } from "../utils/dateTimeUtils.js";
+import { formatDateDMY, getTodayISO } from "../utils/dateTimeUtils.js";
 
 /**
  * List of known prompt injection patterns and unauthorized system commands
@@ -35,7 +35,8 @@ export function validateAndSanitizeInput(input) {
   // 2. Syntactic & Schema Validation
   const result = MeetingRequestInputSchema.safeParse(input);
   if (!result.success) {
-    const errorMessages = result.error.errors.map(err => `${err.path.join(".")}: ${err.message}`).join("; ");
+    const issues = result.error.issues || result.error.errors || [];
+    const errorMessages = issues.map(err => `${err.path.join(".")}: ${err.message}`).join("; ");
     return {
       valid: false,
       error: `Input Validation Error: ${errorMessages}`
@@ -44,8 +45,7 @@ export function validateAndSanitizeInput(input) {
 
   // 3. Past Date Guardrail: Ensure requested date is today or in the future
   const data = result.data;
-  const now = new Date();
-  const todayISO = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+  const todayISO = getTodayISO();
   if (data.preferredDate < todayISO) {
     return {
       valid: false,

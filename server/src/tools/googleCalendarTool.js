@@ -1,25 +1,24 @@
 /**
  * Google Calendar Integration Tool
- * Generates official Google Calendar direct-add links with Google Meet video conferences
+ * Generates official Google Calendar direct-add links and RFC 5545 .ics calendar files with Google Meet video conferences
  */
 
 /**
- * Formats date and time into Google Calendar UTC format: YYYYMMDDTHHmmssZ
+ * Formats local date and time into YYYYMMDDTHHmmss (without trailing Z so ctz governs)
  */
-function formatToGCalDateTime(dateStr, timeStr) {
-  const [year, month, day] = dateStr.split("-").map(Number);
-  const [hours, minutes] = timeStr.split(":").map(Number);
-  const dt = new Date(Date.UTC(year, month - 1, day, hours, minutes));
-  return dt.toISOString().replace(/-|:|\.\d\d\d/g, "");
+function formatToLocalGCalDateTime(dateStr, timeStr) {
+  const cleanDate = dateStr.replace(/-/g, "");
+  const cleanTime = timeStr.replace(/:/g, "").padEnd(4, "0") + "00";
+  return `${cleanDate}T${cleanTime}`;
 }
 
 export const GoogleCalendarTool = {
   /**
    * Generates a direct Google Calendar web event creation link with Google Meet pre-configured
    */
-  generateGoogleCalendarUrl({ title, date, startTime, endTime, attendees = [], agenda = [], meetingLink = "" }) {
-    const startFormatted = formatToGCalDateTime(date, startTime);
-    const endFormatted = formatToGCalDateTime(date, endTime);
+  generateGoogleCalendarUrl({ title, date, startTime, endTime, timezone = "Asia/Kolkata", attendees = [], agenda = [], meetingLink = "" }) {
+    const startFormatted = formatToLocalGCalDateTime(date, startTime);
+    const endFormatted = formatToLocalGCalDateTime(date, endTime);
 
     const description = [
       `🎥 Google Meet Video Conference: ${meetingLink}`,
@@ -27,7 +26,7 @@ export const GoogleCalendarTool = {
       `Meeting Topic: ${title}`,
       "",
       "Agenda:",
-      ...agenda.map(a => `• ${a}`),
+      ...(agenda || []).map(a => `• ${a}`),
       "",
       "Scheduled autonomously by AI Meeting Scheduler (LangGraph Multi-Agent System)"
     ].join("\n");
@@ -36,6 +35,7 @@ export const GoogleCalendarTool = {
       action: "TEMPLATE",
       text: title,
       dates: `${startFormatted}/${endFormatted}`,
+      ctz: timezone,
       details: description,
       location: meetingLink, // Directly passes the Google Meet URL as location
       add: attendees.join(",")
@@ -45,17 +45,17 @@ export const GoogleCalendarTool = {
   },
 
   /**
-   * Generates RFC 5545 standard .ics iCalendar file with Google Meet video link
+   * Generates RFC 5545 standard .ics iCalendar file with timezone and Google Meet video link
    */
-  generateIcsContent({ title, date, startTime, endTime, attendees = [], agenda = [], meetingLink = "" }) {
-    const startFormatted = formatToGCalDateTime(date, startTime);
-    const endFormatted = formatToGCalDateTime(date, endTime);
+  generateIcsContent({ title, date, startTime, endTime, timezone = "Asia/Kolkata", attendees = [], agenda = [], meetingLink = "" }) {
+    const startFormatted = formatToLocalGCalDateTime(date, startTime);
+    const endFormatted = formatToLocalGCalDateTime(date, endTime);
     const uid = `meet-${Date.now()}-${Math.random().toString(36).substring(2, 7)}@acme.com`;
 
     const description = [
       `Meeting Topic: ${title}`,
       `Google Meet: ${meetingLink}`,
-      agenda.map(a => `- ${a}`).join("\\n")
+      (agenda || []).map(a => `- ${a}`).join("\\n")
     ].join("\\n");
 
     return [
@@ -66,15 +66,15 @@ export const GoogleCalendarTool = {
       "METHOD:REQUEST",
       "BEGIN:VEVENT",
       `UID:${uid}`,
-      `DTSTAMP:${startFormatted}`,
-      `DTSTART:${startFormatted}`,
-      `DTEND:${endFormatted}`,
+      `DTSTAMP:${startFormatted}Z`,
+      `DTSTART;TZID=${timezone}:${startFormatted}`,
+      `DTEND;TZID=${timezone}:${endFormatted}`,
       `SUMMARY:${title}`,
       `DESCRIPTION:${description}`,
       `LOCATION:${meetingLink}`,
       `URL:${meetingLink}`,
       `X-GOOGLE-CONFERENCE:${meetingLink}`,
-      ...attendees.map(email => `ATTENDEE;ROLE=REQ-PARTICIPANT;PARTSTAT=NEEDS-ACTION;RSVP=TRUE:mailto:${email}`),
+      ...(attendees || []).map(email => `ATTENDEE;ROLE=REQ-PARTICIPANT;PARTSTAT=NEEDS-ACTION;RSVP=TRUE:mailto:${email}`),
       "STATUS:CONFIRMED",
       "END:VEVENT",
       "END:VCALENDAR"
